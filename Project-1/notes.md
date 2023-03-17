@@ -7,3 +7,21 @@
 - When implementing conservative load-store ordering, the processor ensures that all memory **operations are executed in the order they appear in the program**. This helps to prevent memory hazards that can lead to incorrect program behavior. For example, if an instruction writes to a memory location that is later read by another instruction, the processor must ensure that the write operation completes before the read operation is executed.
 - Overall, dynamic OoO scheduling with conservative load-store ordering on a restricted set of simplified instructions can improve performance by allowing the processor to execute instructions in parallel while maintaining correct program behavior.
 
+- 2 inst per cycle
+- in stall we dont WB
+
+### Instruction Type : 
+- R (Operation)
+- IMMEDIATE
+- LOAD
+- STALL
+
+
+### Stages in pipeline :
+- FETCH (simple) 
+- DECODE
+- RENAME
+- DISPATCH
+- ISSUE
+- WRITE_BACK
+- COMMIT (simple)
