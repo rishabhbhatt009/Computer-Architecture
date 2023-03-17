@@ -30,10 +30,40 @@ def parse_input(filename):
             meta = {
                 'icount' : idx, 
                 'itype' : line[0], 
-                'arg1' : int(line[1]), 
-                'arg2' : int(line[2]), 
-                'arg3' : int(line[3])
             }
+
+            if meta['itype'] == 'R':
+                meta['isMemout'] = False
+                meta['destReg'] = int(line[1]), 
+                meta['srcReg1'] = int(line[2]), 
+                meta['srcReg2'] = int(line[3]),
+                meta['src1Ready'] = False
+                meta['src2Ready'] = False
+
+            if meta['itype'] == 'I':
+                meta['isMemout'] = False
+                meta['destReg'] = int(line[1]), 
+                meta['srcReg1'] = int(line[2]),
+                meta['srcReg2'] = None,
+                meta['src1Ready'] = False
+                meta['src2Ready'] = True
+
+            if meta['itype'] == 'L':
+                meta['isMemout'] = False
+                meta['destReg'] = int(line[1]), 
+                meta['srcReg1'] = int(line[3]), 
+                meta['srcReg2'] = None,
+                meta['src1Ready'] = False
+                meta['src2Ready'] = True
+
+            if meta['itype'] == 'S':
+                meta['isMemout'] = True
+                meta['destReg'] = None, 
+                meta['srcReg1'] = int(line[1]), 
+                meta['srcReg2'] = int(line[3]),
+                meta['src1Ready'] = False
+                meta['src2Ready'] = False
+
             instructions.append(meta)
 
         return num_reg, width, instructions
@@ -65,15 +95,9 @@ def main() :
     global_vars['num_reg'], global_vars['width'], global_vars['instructions'] = parse_input(file_name)
     global_vars['schedule_map'] = [[0]*7 for i in range(len(global_vars['instructions']))]
     global_vars['freeList'] = [i for i in range(32, global_vars['num_reg'])]
-
-    # print(f'{command=}', f'{file_name=}', '-'*50,sep='\n')
-    # print('Input File','-'*50, sep='\n')
-    # print(f'{num_reg=}', f'{width=}',sep='\n')
-    # print(*instructions, sep='\n')
-    # print('-'*50)    
      
     # update schedule 
-    obj1 = simulator(global_vars['instructions'], global_vars['schedule_map'])
+    obj1 = simulator(global_vars)
     global_vars['schedule_map'] = obj1.schedule()
 
     # generate output
