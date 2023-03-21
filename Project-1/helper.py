@@ -78,16 +78,15 @@ class simulator :
                 if instruction['icycle'] < self.cycle :
 
                     if not instruction['isMemout'] : 
-                        if not self.freelist == []:
-                            instruction['scr1Ready'] = instruction['scr1Ready'] or self.readyTable[self.mapTable[instruction['srcReg1']]]
+                        if self.freeList :
+                            instruction['src1Ready'] = instruction['src1Ready'] or self.readyTable[self.mapTable[instruction['srcReg1']]]
                             instruction['psrc1Reg'] = self.mapTable[instruction['srcReg1']]
 
                             if instruction['itype'] == 'R':
-                                instruction['scr2Ready'] = instruction['scr2Ready'] or self.readyTable[self.mapTable[instruction['srcReg2']]]
+                                instruction['src2Ready'] = instruction['src2Ready'] or self.readyTable[self.mapTable[instruction['srcReg2']]]
                                 instruction['psrc2Reg'] = self.mapTable[instruction['srcReg2']]
 
-                            new_dest = self.freelist[0] # front
-                            self.freelist.pop(0)
+                            new_dest = self.freeList.pop(0) # front
 
                             instruction['overReg'] = self.mapTable[instruction['destReg']]
                             self.mapTable[instruction['destReg']] = new_dest
@@ -101,9 +100,9 @@ class simulator :
                             self.qrename.pop(0)    
                                                            
                     else : 
-                        instruction['scr1Ready'] = instruction['scr1Ready'] or self.readyTable[self.mapTable[instruction['srcReg1']]]
+                        instruction['src1Ready'] = instruction['src1Ready'] or self.readyTable[self.mapTable[instruction['srcReg1']]]
                         instruction['psrc1Reg'] = self.mapTable[instruction['srcReg1']]
-                        instruction['scr2Ready'] = instruction['scr2Ready'] or self.readyTable[self.mapTable[instruction['srcReg2']]]
+                        instruction['src2Ready'] = instruction['src2Ready'] or self.readyTable[self.mapTable[instruction['srcReg2']]]
                         instruction['psrc2Reg'] = self.mapTable[instruction['srcReg2']]
                         
                         instruction['icycle'] = self.cycle
@@ -129,26 +128,28 @@ class simulator :
     def issue(self):
         i = 0
         it = 0
-        while i < range(self.width) and it < len(self.qissue) :  
+        while i < self.width and it < len(self.qissue) :  
             
             instruction = self.qissue[it]
-            instruction['src1Ready'] = instruction['src1Ready'] or self.readyTable[instruction['psrc1Reg']]
 
-            if instruction['itype'] in ['R', 'S']:
-                instruction['scr2Ready'] = instruction['scr2Ready'] or self.readyTable[instruction['psrc2Reg']]
+            if instruction['icycle'] < self.cycle :
+        
+                instruction['src1Ready'] = instruction['src1Ready'] or self.readyTable[instruction['psrc1Reg']]
 
-            if instruction['src1Ready'] and instruction['src2Ready']:
-                if instruction['icycle'] < self.cycle :
+                if instruction['itype'] in ['R', 'S']:
+                    instruction['src2Ready'] = instruction['src2Ready'] or self.readyTable[instruction['psrc2Reg']]
+
+                if instruction['src1Ready'] and instruction['src2Ready']:
                     instruction['icycle'] = self.cycle
                     self.qwrite_back.append(instruction)
                     # update schedule
                     self.schedule_map[instruction['icount']][4] = self.cycle                
                     self.qissue.pop(it)
                     i += 1
-            else :
-                it +=1
-
-
+                    continue 
+                
+            it += 1
+                            
     def write_back(self):
         for i in range(self.width):
             if self.qwrite_back :                                
@@ -157,7 +158,7 @@ class simulator :
                 if instruction['icycle'] < self.cycle :
 
                     if not instruction['isMemout']:
-                        self.readyTable[instruction['pDestReg']]=True
+                        self.readyTable[instruction['pdestReg']]=True
 
                     instruction['icycle'] = self.cycle
                     self.qcommit.append(instruction)
@@ -168,7 +169,7 @@ class simulator :
 
     def commit(self):
         while self.pendingfreeList :
-            self.freelist.append(self.pendingfreeList.pop(0))
+            self.freeList.append(self.pendingfreeList.pop(0))
 
         i = 0
         idx = 0
@@ -184,6 +185,6 @@ class simulator :
                 
                 self.qcommit.pop(0)
                 i += 1
-                
-            idx += 1
+            else :
+                idx += 1
             

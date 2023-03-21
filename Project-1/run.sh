@@ -1,1 +1,1 @@
-python3 python-script.py ls Data/ex1.txt
+python3 python-script.py Data/ex1.txt

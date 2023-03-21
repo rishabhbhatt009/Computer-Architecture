@@ -9,8 +9,8 @@ global_vars = {
     'schedule_map' : [],
     'cycle' : 0,
 
-    'mapTable' : [i for i in range(32)],
-    'readyList' : [True for i in range(32)],
+    'mapTable' : {},
+    'readyTable' : {},
     'freeList' : []
 }
 
@@ -26,7 +26,6 @@ def parse_input(filename):
         instructions = []
 
         for idx, line in enumerate(ret[1:]):            
-            
             meta = {
                 'icount' : idx, 
                 'itype' : line[0], 
@@ -34,24 +33,24 @@ def parse_input(filename):
 
             if meta['itype'] == 'R':
                 meta['isMemout'] = False
-                meta['destReg'] = int(line[1]), 
-                meta['srcReg1'] = int(line[2]), 
-                meta['srcReg2'] = int(line[3]),
+                meta['destReg'] = int(line[1]) 
+                meta['srcReg1'] = int(line[2]) 
+                meta['srcReg2'] = int(line[3])
                 meta['src1Ready'] = False
                 meta['src2Ready'] = False
 
             if meta['itype'] == 'I':
                 meta['isMemout'] = False
-                meta['destReg'] = int(line[1]), 
-                meta['srcReg1'] = int(line[2]),
+                meta['destReg'] = int(line[1]) 
+                meta['srcReg1'] = int(line[2])
                 meta['srcReg2'] = None,
                 meta['src1Ready'] = False
                 meta['src2Ready'] = True
 
             if meta['itype'] == 'L':
                 meta['isMemout'] = False
-                meta['destReg'] = int(line[1]), 
-                meta['srcReg1'] = int(line[3]), 
+                meta['destReg'] = int(line[1])
+                meta['srcReg1'] = int(line[3]) 
                 meta['srcReg2'] = None,
                 meta['src1Ready'] = False
                 meta['src2Ready'] = True
@@ -59,8 +58,8 @@ def parse_input(filename):
             if meta['itype'] == 'S':
                 meta['isMemout'] = True
                 meta['destReg'] = None, 
-                meta['srcReg1'] = int(line[1]), 
-                meta['srcReg2'] = int(line[3]),
+                meta['srcReg1'] = int(line[1]) 
+                meta['srcReg2'] = int(line[3])
                 meta['src1Ready'] = False
                 meta['src2Ready'] = False
 
@@ -69,33 +68,27 @@ def parse_input(filename):
         return num_reg, width, instructions
 
 def generate_output(schedule):
-    print('Output File','-'*50, sep='\n')
-    for x in schedule : print(*x, sep=',')
+    print(*global_vars['schedule_map'], sep='\n')
+    with open('out.txt', 'w') as file:
+        for schedule in global_vars['schedule_map']:
+            file.write(','.join(map(str,schedule)) + "\n")
 
-def init():
-    # map_table
-    # ready_table
-    # free list, head, tail
-    # schedule 
-    
-    # Ideas
-    #   - Que for each resource 
-    #   - Resource allocation in-order of exec
-
-    
     return
 
 def operation(type, source_reg, dest_reg):
     return 
 
 def main() : 
-    command = sys.argv[1]
-    file_name = sys.argv[2]
+    file_name = sys.argv[1]
     
     global_vars['num_reg'], global_vars['width'], global_vars['instructions'] = parse_input(file_name)
     global_vars['schedule_map'] = [[0]*7 for i in range(len(global_vars['instructions']))]
     global_vars['freeList'] = [i for i in range(32, global_vars['num_reg'])]
-     
+    
+    for i in range(32):
+        global_vars['readyTable'][i] = True 
+        global_vars['mapTable'][i] = i
+    
     # update schedule 
     obj1 = simulator(global_vars)
     global_vars['schedule_map'] = obj1.schedule()
