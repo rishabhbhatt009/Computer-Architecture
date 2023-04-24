@@ -133,7 +133,12 @@ class simulator :
             instruction = self.qissue[it]
 
             if instruction['icycle'] < self.cycle :
-        
+                
+                ############################################################################################################## 
+                ####### you only care about the physical registers you no longer care about the non-physical registers #######
+                ##############################################################################################################
+
+                #### this is wrong
                 instruction['src1Ready'] = instruction['src1Ready'] or self.readyTable[instruction['psrc1Reg']]
 
                 if instruction['itype'] in ['R', 'S']:
