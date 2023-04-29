@@ -25,9 +25,6 @@ int validateConfiguration(std::string configuration){
   if(isan18dimconfiguration(configuration)){ // necessary, but insufficient
     extractConfiguration(configuration, configurationDimsAsInts); // Configuration parameters now available in array
     // FIXME - YOUR CODE HERE 
-    
-    // greater than less han check maybe
-
   } else {
     returnValue=0;
   }
