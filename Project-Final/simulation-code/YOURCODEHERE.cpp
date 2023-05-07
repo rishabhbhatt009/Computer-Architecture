@@ -13,11 +13,12 @@
 
 #include "431project.h"
 
+int count = 0;
 
 // util functions
 unsigned int getdl1size(std::string configuration);
 unsigned int getil1size(std::string configuration);
-unsigned int getl2size(std::string configuration);
+unsigned int getl2size(std::string configuration);  
 
 unsigned int getl1lat(int size, int assoc){  
   int latency = log2(size) - 12;
@@ -166,10 +167,10 @@ std::string YourProposalFunction(std::string currentconfiguration, std::string b
     // update configurationDimsAsInts
     
     configurationDimsAsInts[0] = getRandomNumber(0,3);
-    configurationDimsAsInts[1] = 0; // default 
+    configurationDimsAsInts[1] = getRandomNumber(0,1); 
     configurationDimsAsInts[2] = getRandomNumber(0,1);
-    configurationDimsAsInts[3] = 0; // default 
-    configurationDimsAsInts[4] = 0; // default 
+    configurationDimsAsInts[3] = getRandomNumber(0,5); 
+    configurationDimsAsInts[4] = getRandomNumber(0,3);
     configurationDimsAsInts[5] = 0; // default 
     configurationDimsAsInts[6] = 5; // default
     configurationDimsAsInts[7] = 0; // default 
@@ -264,10 +265,11 @@ std::string YourProposalFunction(std::string currentconfiguration, std::string b
 
   if (validateConfiguration(nextconfiguration)){
     std::cout << "Valid Configuration     : " << nextconfiguration << std::endl;
+    count++ ; 
     return nextconfiguration;
   }
   else{
-    std::cout << "Invalid Configuration     : " << nextconfiguration << std::endl;
+    // std::cout << "Invalid Configuration     : " << nextconfiguration << std::endl;
     nextconfiguration = YourProposalFunction(currentconfiguration, bestEXECconfiguration, bestEDPconfiguration, optimizeforEXEC, optimizeforEDP);
   }
   
