@@ -13,7 +13,7 @@
 
 #include "431project.h"
 
-int count = 0;
+// int count = 0;
 
 // util functions
 unsigned int getdl1size(std::string configuration);
@@ -23,18 +23,20 @@ unsigned int getl2size(std::string configuration);
 unsigned int getl1lat(int size, int assoc){  
   int latency = log2(size) - 12;
 
-  if(assoc==1){
-    return latency;
-  }
   if(assoc==2){
-    return latency+1;
+    latency+=1 ;
   }
   if(assoc==4){
-    return latency+2;
+    latency+=2 ;
   }
+
+  int idx = latency - 1;
+  return idx;
 }
+
 unsigned int getl2lat(int size, int assoc){  
   int latency = log2(size) - 10;
+
   
   if(assoc==1){
     return latency-2;
@@ -51,6 +53,9 @@ unsigned int getl2lat(int size, int assoc){
   if(assoc==16){
     return latency+2;
   }
+
+  int idx = latency - 5;
+  return idx; 
 }
 
 
@@ -113,11 +118,6 @@ int validateConfiguration(std::string configuration){
     return 0; 
   }
   
-  // Check 4 : latency mapping for L1 (inst, data)
-  if (dl1_lat != getl1lat(dl1_size, dl1_assoc) || il1_lat != getl1lat(il1_size, il1_assoc)){
-    return 0 ; 
-  }
-
   // Check 5 : ul2 block size must be at least twice your il1 (dl1) block size 
   if (l2_block_size < 2*il1_block_size || l2_block_size < 2*dl1_block_size){
     return 0;
@@ -127,10 +127,27 @@ int validateConfiguration(std::string configuration){
   if (l2_block_size > 128){
     return 0;
   }
-  
+
+  if(il1_size < (8*1024) || il1_size > (64*1024)){
+    return 0;
+  }
+
+  if(dl1_size < (8*1024) || dl1_size > (64*1024)){
+    return 0;
+  }
+
+  if(l2_size < (128*1024) || l2_size > (2*1024*1024)){
+    return 0;
+  }
+
   // Check 7 : ul2 must be at least as large as il1+dl1 in order to be inclusive.
   if (l2_size < il1_size+dl1_size){
     return 0;
+  }
+
+  // Check 4 : latency mapping for L1 (inst, data)
+  if (dl1_lat != getl1lat(dl1_size, dl1_assoc) || il1_lat != getl1lat(il1_size, il1_assoc)){
+    return 0 ; 
   }
 
   // Check 8 : latency mapping for L2
@@ -167,18 +184,18 @@ std::string YourProposalFunction(std::string currentconfiguration, std::string b
     // update configurationDimsAsInts
     
     configurationDimsAsInts[0] = getRandomNumber(0,3);
-    configurationDimsAsInts[1] = getRandomNumber(0,1); 
-    configurationDimsAsInts[2] = getRandomNumber(0,1);
+    configurationDimsAsInts[1] = 1; 
+    configurationDimsAsInts[2] = 1; // OOO  
     configurationDimsAsInts[3] = getRandomNumber(0,5); 
     configurationDimsAsInts[4] = getRandomNumber(0,3);
     configurationDimsAsInts[5] = 0; // default 
     configurationDimsAsInts[6] = 5; // default
     configurationDimsAsInts[7] = 0; // default 
-    configurationDimsAsInts[8] = getRandomNumber(0,8); // il1 
+    configurationDimsAsInts[8] = getRandomNumber(5,8); // il1 
     configurationDimsAsInts[9] = getRandomNumber(0,2); // il1 
-    configurationDimsAsInts[10] = 2; // default 
-    configurationDimsAsInts[11] = 2; // default 
-    configurationDimsAsInts[12] = 2; // default 
+    configurationDimsAsInts[10] = getRandomNumber(2,9);
+    configurationDimsAsInts[11] = getRandomNumber(0,3); // l2 block size 
+    configurationDimsAsInts[12] = getRandomNumber(0,4); // 
     configurationDimsAsInts[13] = 3; // TLB default
 
     // mapping latency 
@@ -202,7 +219,7 @@ std::string YourProposalFunction(std::string currentconfiguration, std::string b
     configurationDimsAsInts[16] = getl2lat(l2_size, l2_assoc); 
 
 
-    configurationDimsAsInts[17] = getRandomNumber(0,5);
+    configurationDimsAsInts[17] = 5;
 
   }
 
@@ -211,18 +228,18 @@ std::string YourProposalFunction(std::string currentconfiguration, std::string b
     // update configurationDimsAsInts
     
     configurationDimsAsInts[0] = getRandomNumber(0,3);
-    configurationDimsAsInts[1] = 0; // default 
-    configurationDimsAsInts[2] = getRandomNumber(0,1);
-    configurationDimsAsInts[3] = 0; // default 
-    configurationDimsAsInts[4] = 0; // default 
+    configurationDimsAsInts[1] = getRandomNumber(0,1); // default 
+    configurationDimsAsInts[2] = 1;
+    configurationDimsAsInts[3] = getRandomNumber(0,5); 
+    configurationDimsAsInts[4] = getRandomNumber(0,3);
     configurationDimsAsInts[5] = 0; // default 
-    configurationDimsAsInts[6] = getRandomNumber(0,8); // dl1
+    configurationDimsAsInts[6] = getRandomNumber(5,8); // dl1
     configurationDimsAsInts[7] = getRandomNumber(0,2); // dl1 
     configurationDimsAsInts[8] = 5; // default 
     configurationDimsAsInts[9] = 0; // default 
-    configurationDimsAsInts[10] = getRandomNumber(0,9); // default 
-    configurationDimsAsInts[11] = getRandomNumber(0,3); // default 
-    configurationDimsAsInts[12] = getRandomNumber(0,4); // default 
+    configurationDimsAsInts[10] = getRandomNumber(2,9); // l2 set 
+    configurationDimsAsInts[11] = getRandomNumber(0,3); // l2 block size 
+    configurationDimsAsInts[12] = getRandomNumber(0,4); // 
     configurationDimsAsInts[13] = 3; // TLB default 
 
     // mapping latency 
@@ -246,7 +263,7 @@ std::string YourProposalFunction(std::string currentconfiguration, std::string b
     configurationDimsAsInts[16] = getl2lat(l2_size, l2_assoc); 
 
     
-    configurationDimsAsInts[17] = getRandomNumber(0,5);
+    configurationDimsAsInts[17] = 5; // optimized
   }   
 
   else {
@@ -264,12 +281,13 @@ std::string YourProposalFunction(std::string currentconfiguration, std::string b
 
 
   if (validateConfiguration(nextconfiguration)){
-    std::cout << "Valid Configuration     : " << nextconfiguration << std::endl;
-    count++ ; 
+    // count++ ; 
+    std::cout << "Valid Configuration     "<< nextconfiguration << std::endl;
+    
     return nextconfiguration;
   }
   else{
-    // std::cout << "Invalid Configuration     : " << nextconfiguration << std::endl;
+    std::cout << "Invalid Configuration     : " << nextconfiguration << std::endl;
     nextconfiguration = YourProposalFunction(currentconfiguration, bestEXECconfiguration, bestEDPconfiguration, optimizeforEXEC, optimizeforEDP);
   }
   
